@@ -11,10 +11,12 @@ public class clock {
     static JLabel timeLabel = new JLabel();
     static JLabel dateLabel = new JLabel();
 
+    static int screenWidth, screenHeight, 
+        initialWidth, initialHeight, x, y;
+
     public static void main(String[] args) {
         displayFrame();
-        displayTime();
-        displayDate();
+        displayTimeAndDate();
     }
 
     public static void displayFrame() {
@@ -24,24 +26,19 @@ public class clock {
 
         frame.getContentPane().setBackground(new Color(0, 0, 0)); // Default color of the window
 
-        // Get the screenwidth of the device
-        GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-        GraphicsDevice gd = ge.getDefaultScreenDevice();
-        DisplayMode mode = gd.getDisplayMode();
-        int screenWidth = mode.getWidth();
-        int screenHeight = mode.getHeight();
+        getScreenHeightAndWidth();
 
         // Set the initial width and length of the window
-        int initialWidth = (int) (screenWidth * 0.3);
-        int initialHeight = (int) (initialWidth / 16 * 9);
+        initialWidth = (int) (screenWidth * 0.3);
+        initialHeight = (int) (initialWidth / 16 * 9);
 
         // Set the size of window when first time appear to the screen
         frame.setSize(initialWidth, initialHeight);
 
         // Set the position of window when first time appear to the screen
-        int x = (int) (screenWidth / 2) - initialWidth;
+        x = (int) (screenWidth / 2) - initialWidth;
         // int x = (int) (screenWidth - initialWidth) / 2;
-        int y = (int) ((screenHeight / 2) - initialHeight) - (screenHeight / 12);
+        y = (int) ((screenHeight / 2) - initialHeight) - (screenHeight / 12);
         frame.setLocation(x, y);
 
         // Value monitoring
@@ -57,23 +54,40 @@ public class clock {
         // );
     }
 
-    public static void displayTime() {
-        timeLabel.setForeground(Color.white); // Make the text color white
+    public static void getScreenHeightAndWidth() {
+        GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        GraphicsDevice gd = ge.getDefaultScreenDevice();
+        DisplayMode mode = gd.getDisplayMode();
+        screenWidth = mode.getWidth();
+        screenHeight = mode.getHeight();
+    }
 
-        // Using GridBagLayout to center timeLabel
+    public static void displayTimeAndDate() {
+        // Make the text color change to white
+        timeLabel.setForeground(Color.white);
+        dateLabel.setForeground(Color.white); 
+
+        // Using GridBagLayout to setting position of label
         frame.setLayout(new GridBagLayout());
         GridBagConstraints gbcTime = new GridBagConstraints();
         gbcTime.gridx = 0;
         gbcTime.gridy = 0;
         frame.add(timeLabel, gbcTime);
 
+        GridBagConstraints gbcDate = new GridBagConstraints();
+        gbcDate.gridx = 0;
+        gbcDate.gridy = 1;
+        frame.add(dateLabel, gbcDate);
+
         getActualTime();
+        getActualDate();
 
         // Change the actual time every 1 second
-        Timer timer = new Timer(1000, new ActionListener() {
+        Timer timer = new Timer(1, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 getActualTime();
+                getActualDate();
             }
         });
         timer.start();
@@ -86,40 +100,14 @@ public class clock {
 
         timeLabel.setText(formattedTime);
 
+        // Modifiy the time output
+        timeLabel.setFont(new Font("Arial", Font.BOLD, ((int) (0.2 * frame.getWidth()))));
+
         // Monitoring the output
         // System.out.println(
         //     "Time: " + formattedTime+"\n"+
         //     "---------------------------------------------"
         // );
-    }
-
-    public static void displayDate() {
-        dateLabel.setForeground(Color.white); // Make the text color white
-
-        // Using GridBagLayout to center timeLabel
-        frame.setLayout(new GridBagLayout());
-        GridBagConstraints gbcDate = new GridBagConstraints();
-        gbcDate.gridx = 0;
-        gbcDate.gridy = 1;
-        frame.add(dateLabel, gbcDate);
-
-        getActualDate();
-
-        // Calculate the initial delay until midnight
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime midnight = LocalDateTime.of(now.toLocalDate(), LocalTime.MIDNIGHT);
-        Duration initialDelay = Duration.between(now, midnight);
-
-        // Change the actual time every 24 hours
-        Timer timer = new Timer((int) initialDelay.toMillis(), new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                getActualDate();
-                ((Timer) e.getSource()).setInitialDelay(24 * 60 * 60 * 1000); // Update delay for 24 hours
-            }
-        });
-        timer.setRepeats(false); // Only execute once, then repeat every 24 hours
-        timer.start();
     }
 
     public static void getActualDate() {
@@ -128,6 +116,9 @@ public class clock {
         String formattedDate = currentDate.format(dateFormatter);
 
         dateLabel.setText(formattedDate);
+
+        // Modifiy the date output
+        dateLabel.setFont(new Font("Arial", Font.PLAIN, ((int) (0.05 * frame.getWidth()))));
 
         // Monitoring the output
         // System.out.println(
